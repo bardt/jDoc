@@ -59,6 +59,9 @@ jDoc.Engines.RTF.prototype._createParsedFile = function (text, callback) {
             braceCounter: 0
         },
         parseResult = {
+            options: {
+                zoom: 100
+            },
             pages: [{
                 options: {},
                 css: {},
