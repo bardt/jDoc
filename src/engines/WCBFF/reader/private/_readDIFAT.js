@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readDIFAT = function (options) {
+jDoc.engines.WCBFF.prototype._readDIFAT = function (options) {
     options.fileBinaryReadData.DIFAT = [];
     var i,
         successCount = 109,

@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._DOCParse = function (options) {
+jDoc.engines.WCBFF.prototype._DOCParse = function (options) {
     var wordDocumentStreamIndex = this._getStreamIndexByName({
         name: "WordDocument",
         fileBinaryReadData: options.fileBinaryReadData

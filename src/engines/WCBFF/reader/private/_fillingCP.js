@@ -1,4 +1,4 @@
-jDoc.Engines.WCBFF.prototype._fillingCP = function (options) {
+jDoc.engines.WCBFF.prototype._fillingCP = function (options) {
     var self = this;
 
     options.fileBinaryReadData.cp = options.fileBinaryReadData.cp || [];

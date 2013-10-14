@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._unicodeToUTF8 = function (options) {
+jDoc.engines.WCBFF.prototype._unicodeToUTF8 = function (options) {
     var cd;
 
     options.result = options.result || "";

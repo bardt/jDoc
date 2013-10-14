@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readDirectoryStructure = function (options) {
+jDoc.engines.WCBFF.prototype._readDirectoryStructure = function (options) {
     var start,
         i,
         self = this,

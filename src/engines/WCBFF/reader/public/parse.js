@@ -3,7 +3,7 @@
  * @param options
  * @public
  */
-jDoc.Engines.WCBFF.prototype.parse = function (options) {
+jDoc.engines.WCBFF.prototype.parse = function (options) {
     if (!this.validate()) {
         if (typeof options.error === 'function') {
             options.error(this._errors.invalidFileType);

@@ -1,4 +1,4 @@
-jDoc.Engines.WCBFF.prototype._findCLXOffset = function (options) {
+jDoc.engines.WCBFF.prototype._findCLXOffset = function (options) {
     options.i = options.fileBinaryReadData.binaryData.findPosition({
         data: options.clx,
         needle: 0x02,

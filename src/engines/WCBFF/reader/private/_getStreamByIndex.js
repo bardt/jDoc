@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._getStreamByIndex = function (options) {
+jDoc.engines.WCBFF.prototype._getStreamByIndex = function (options) {
     // Получаем смещение в miniFAT'е
     var start,
         i,

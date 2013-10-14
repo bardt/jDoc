@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readFATChains = function (options) {
+jDoc.engines.WCBFF.prototype._readFATChains = function (options) {
     var j,
         from,
         callbacksCount = options.size,

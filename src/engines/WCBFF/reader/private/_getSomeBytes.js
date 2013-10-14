@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._getSomeBytes = function (options) {
+jDoc.engines.WCBFF.prototype._getSomeBytes = function (options) {
     if (options.data) {
         var bytes = options.fileBinaryReadData.binaryData.excludeUintArray({
             index: options.from,

@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readText = function (options) {
+jDoc.engines.WCBFF.prototype._readText = function (options) {
     var self = this;
 
     if (options.i < options.length) {

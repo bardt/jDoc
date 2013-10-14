@@ -3,7 +3,7 @@
  * @param options.fileBinaryReadData
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readFileHeader = function (options) {
+jDoc.engines.WCBFF.prototype._readFileHeader = function (options) {
     options.fileBinaryReadData.isLittleEndian = false;
     var successCount = 10,
         completeCallbacks = 0,

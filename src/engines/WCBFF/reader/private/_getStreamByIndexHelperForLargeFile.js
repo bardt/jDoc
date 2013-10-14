@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._getStreamByIndexHelperForLargeFile = function (options) {
+jDoc.engines.WCBFF.prototype._getStreamByIndexHelperForLargeFile = function (options) {
     var self = this;
 
     if (options.from != options.fileBinaryReadData.ENDOFCHAIN) {

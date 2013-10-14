@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._getStreams = function (options) {
+jDoc.engines.WCBFF.prototype._getStreams = function (options) {
     var binaryData = new jDoc.Binary(this.file),
         self = this;
 

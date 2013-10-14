@@ -4,7 +4,7 @@
  * @return {*}
  * @private
  */
-jDoc.Engines.WCBFF.prototype._getStreamIndexByName = function (options) {
+jDoc.engines.WCBFF.prototype._getStreamIndexByName = function (options) {
     var i,
         len = options.fileBinaryReadData.fatEntries.length,
         from = options.from || 0;

@@ -4,7 +4,7 @@
  * @return {String}
  * @private
  */
-jDoc.Engines.WCBFF.prototype._UTF16ToANSI = function (options) {
+jDoc.engines.WCBFF.prototype._UTF16ToANSI = function (options) {
     var result = "",
         i,
         len = options.data.length;

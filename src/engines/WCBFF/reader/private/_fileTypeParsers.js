@@ -1,9 +1,9 @@
 /**
  * File types for parsing
- * @lends jDoc.Engines.WCBFF.prototype
+ * @lends jDoc.engines.WCBFF.prototype
  * @private
  */
-jDoc.Engines.WCBFF.prototype._fileTypeParsers = [
+jDoc.engines.WCBFF.prototype._fileTypeParsers = [
     {
         extension: ['doc'],
         mime: ['application/msword'],

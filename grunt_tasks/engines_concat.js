@@ -3,7 +3,7 @@ module.exports = function () {
         wcbff: {
             reader: {
                 options: {
-                    namespace: 'jDoc.Engines.WCBFF.prototype',
+                    namespace: 'jDoc.engines.WCBFF.prototype',
                     mainFilePath: 'src/engines/WCBFF/main.js'
                 },
                 src: [

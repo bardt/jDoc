@@ -131,7 +131,7 @@
      * @type {Object}
      */
     var jDoc = {
-        Engines: {},
+        engines: {},
 
         currentEngine: null,
 
@@ -233,9 +233,9 @@
              */
             this.currentEngine = null;
 
-            for (engine in this.Engines) {
-                if (this.Engines.hasOwnProperty(engine)) {
-                    engineObj = new this.Engines[engine](file);
+            for (engine in this.engines) {
+                if (this.engines.hasOwnProperty(engine)) {
+                    engineObj = new this.engines[engine](file);
                     if (engineObj.validate()) {
                         this.currentEngine = engineObj;
                         break;
@@ -9289,8 +9289,8 @@
      * @constructor
      * @type {Object}
      */
-    jDoc.Engines.WCBFF = jDoc.Engine.extend(
-        /** @lends jDoc.Engines.WCBFF.prototype */
+    jDoc.engines.WCBFF = jDoc.Engine.extend(
+        /** @lends jDoc.engines.WCBFF.prototype */
         {
             /**
              *
@@ -9542,7 +9542,7 @@
             },
             /**
              * File types for parsing
-             * @lends jDoc.Engines.WCBFF.prototype
+             * @lends jDoc.engines.WCBFF.prototype
              * @private
              */
             _fileTypeParsers: [{

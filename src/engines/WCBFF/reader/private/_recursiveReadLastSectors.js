@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._recursiveReadLastSectors = function (options) {
+jDoc.engines.WCBFF.prototype._recursiveReadLastSectors = function (options) {
     var start = (options.from + 1) << options.fileBinaryReadData.sectorShift,
         successCount = (options.size - 4),
         i,

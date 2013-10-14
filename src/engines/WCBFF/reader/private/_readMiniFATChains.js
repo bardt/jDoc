@@ -3,7 +3,7 @@
  * @param options
  * @private
  */
-jDoc.Engines.WCBFF.prototype._readMiniFATChains = function (options) {
+jDoc.engines.WCBFF.prototype._readMiniFATChains = function (options) {
     if (options.from != options.fileBinaryReadData.ENDOFCHAIN) {
         var start = (options.from + 1) << options.fileBinaryReadData.sectorShift,
             i,
