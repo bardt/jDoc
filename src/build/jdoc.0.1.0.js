@@ -10017,6 +10017,24 @@
                         parseResult: parseResult
                     };
                 },
+                sl: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = Math.abs((options.param && options.param !== -1) || 0),
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    if (param > 0) {
+                        el.dimensionCSSRules.lineHeight = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 strike: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -10095,6 +10113,72 @@
 
                     if (parseParams.currentTextElement) {
                         parseParams.currentTextElement.properties.textContent += this._getNonbreakingSpace();
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                pichgoal: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param;
+
+                    if (param > 0) {
+                        parseParams.currentTextElementParent.dimensionCSSRules.height = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                picscalex: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param;
+
+                    if (parseParams.currentTextElementParent.dimensionCSSRules.height) {
+                        parseParams.currentTextElementParent.dimensionCSSRules.height.value = Math.round(
+                            parseParams.currentTextElementParent.dimensionCSSRules.height.value * param / 100
+                        );
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                picscaley: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param;
+
+                    if (parseParams.currentTextElementParent.dimensionCSSRules.width) {
+                        parseParams.currentTextElementParent.dimensionCSSRules.width.value = Math.round(
+                            parseParams.currentTextElementParent.dimensionCSSRules.width.value * param / 100
+                        );
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                picwgoal: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param;
+
+                    if (param > 0) {
+                        parseParams.currentTextElementParent.dimensionCSSRules.width = {
+                            value: param / 20,
+                            units: "pt"
+                        };
                     }
 
                     return {
