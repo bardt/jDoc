@@ -3,12 +3,12 @@ module.exports = function () {
         rtf: {
             reader: {
                 options: {
-                    namespace: 'jDoc.Engines.RTF.prototype',
+                    namespace: 'jDoc.engines.RTF.prototype',
                     mainFilePath: 'src/engines/RTF/main.js',
                     complexProperties: [
                         {
-                            name: "controlWordsParsers",
-                            src: ['src/engines/RTF/reader/private/controlWordsParsers/**/*.js']
+                            name: "_controlWordsParsers",
+                            src: ['src/engines/RTF/reader/private/_controlWordsParsers/**/*.js']
                         }
                     ]
                 },

@@ -4,7 +4,7 @@
  * @returns {null}
  * @private
  */
-jDoc.Engines.RTF.prototype._destroyTable = function (parseParams) {
+jDoc.engines.RTF.prototype._destroyTable = function (parseParams) {
     parseParams.styles.cells = {
         css: {},
         dimensionCSSRules: {}

@@ -3,7 +3,7 @@
  * @returns {*}
  * @private
  */
-jDoc.Engines.RTF.prototype._initRow = function () {
+jDoc.engines.RTF.prototype._initRow = function () {
     return {
         cells: [],
         css: {},

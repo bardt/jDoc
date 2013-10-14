@@ -3,7 +3,7 @@
  * @param el
  * @private
  */
-jDoc.Engines.RTF.prototype._resetParagraphProperties = function (el) {
+jDoc.engines.RTF.prototype._resetParagraphProperties = function (el) {
     el.css = {};
     el.dimensionCSSRules = {};
 

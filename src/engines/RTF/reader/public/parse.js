@@ -3,7 +3,7 @@
  * @param options
  * @returns {null}
  */
-jDoc.Engines.RTF.prototype.parse = function (options) {
+jDoc.engines.RTF.prototype.parse = function (options) {
     var reader,
         self;
 

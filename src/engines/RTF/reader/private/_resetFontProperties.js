@@ -3,7 +3,7 @@
  * @param el
  * @private
  */
-jDoc.Engines.RTF.prototype._resetFontProperties = function (el) {
+jDoc.engines.RTF.prototype._resetFontProperties = function (el) {
     el.css.fontStyle = "none";
     el.css.fontVariant = "none";
     el.css.textDecoration = "none";

@@ -1,4 +1,4 @@
-jDoc.Engines.RTF.prototype._ignoreControlWordGroups = {
+jDoc.engines.RTF.prototype._ignoreControlWordGroups = {
     "stylesheet": true,
     "fonttbl": true,
     "colortbl": true,

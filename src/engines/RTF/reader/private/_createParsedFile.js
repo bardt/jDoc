@@ -4,7 +4,7 @@
  * @param callback
  * @private
  */
-jDoc.Engines.RTF.prototype._createParsedFile = function (text, callback) {
+jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
     var i = 0,
         parseParams = {
             unParsedControlWords: {},
@@ -39,6 +39,7 @@ jDoc.Engines.RTF.prototype._createParsedFile = function (text, callback) {
             },
             pageData: {
                 options: {},
+                attributes: {},
                 css: {},
                 dimensionCSSRules: {},
                 elements: []
@@ -65,6 +66,7 @@ jDoc.Engines.RTF.prototype._createParsedFile = function (text, callback) {
             pages: [{
                 options: {},
                 css: {},
+                attributes: {},
                 dimensionCSSRules: {},
                 elements: [{
                     options: {

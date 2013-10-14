@@ -7,7 +7,7 @@
  * @returns {Number}
  * @private
  */
-jDoc.Engines.RTF.prototype._parseControlWord = function (text, index, parseParams, parseResult) {
+jDoc.engines.RTF.prototype._parseControlWord = function (text, index, parseParams, parseResult) {
     var match,
         clearedControlWord,
         controlWordParseResult,
@@ -52,7 +52,7 @@ jDoc.Engines.RTF.prototype._parseControlWord = function (text, index, parseParam
     if (this._ignoreControlWordGroups[clearedControlWord]) {
         parseParams.ignoreGroups.push(parseParams.braceCounter);
     } else if (clearedControlWord && !parseParams.ignoreGroups.length) {
-        if (this.controlWordsParsers[clearedControlWord]) {
+        if (this._controlWordsParsers[clearedControlWord]) {
             controlWordParserData = {
                 clearedControlWord: clearedControlWord,
                 controlWord: controlWord,
@@ -60,7 +60,7 @@ jDoc.Engines.RTF.prototype._parseControlWord = function (text, index, parseParam
                 parseParams: parseParams,
                 param: param
             };
-            controlWordParseResult = this.controlWordsParsers[clearedControlWord].call(this, controlWordParserData);
+            controlWordParseResult = this._controlWordsParsers[clearedControlWord].call(this, controlWordParserData);
             parseResult = controlWordParseResult.parseResult;
             parseParams = controlWordParseResult.parseParams;
             controlWordParserData = null;

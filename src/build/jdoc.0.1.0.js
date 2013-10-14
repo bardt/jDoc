@@ -131,7 +131,7 @@
      * @type {Object}
      */
     var jDoc = {
-        Engines: {},
+        engines: {},
 
         currentEngine: null,
 
@@ -233,9 +233,9 @@
              */
             this.currentEngine = null;
 
-            for (engine in this.Engines) {
-                if (this.Engines.hasOwnProperty(engine)) {
-                    engineObj = new this.Engines[engine](file);
+            for (engine in this.engines) {
+                if (this.engines.hasOwnProperty(engine)) {
+                    engineObj = new this.engines[engine](file);
                     if (engineObj.validate()) {
                         this.currentEngine = engineObj;
                         break;
@@ -9289,8 +9289,8 @@
      * @constructor
      * @type {Object}
      */
-    jDoc.Engines.RTF = jDoc.Engine.extend(
-        /** @lends jDoc.Engines.RTF.prototype */
+    jDoc.engines.RTF = jDoc.Engine.extend(
+        /** @lends jDoc.engines.RTF.prototype */
         {
             /**
              *
@@ -9333,6 +9333,7 @@
                         },
                         pageData: {
                             options: {},
+                            attributes: {},
                             css: {},
                             dimensionCSSRules: {},
                             elements: []
@@ -9359,6 +9360,7 @@
                         pages: [{
                             options: {},
                             css: {},
+                            attributes: {},
                             dimensionCSSRules: {},
                             elements: [{
                                 options: {
@@ -9527,7 +9529,9 @@
                         },
                         attributes: jDoc.clone(data.attributes),
                         dimensionCSSRules: jDoc.clone(data.dimensionCSSRules),
-                        css: jDoc.clone(data.css)
+                        css: jDoc.deepMerge({}, data.css, {
+                            borderCollapse: "collapse"
+                        })
                     };
 
                 delete table.options.isParagraph;
@@ -9610,7 +9614,7 @@
                 if (this._ignoreControlWordGroups[clearedControlWord]) {
                     parseParams.ignoreGroups.push(parseParams.braceCounter);
                 } else if (clearedControlWord && !parseParams.ignoreGroups.length) {
-                    if (this.controlWordsParsers[clearedControlWord]) {
+                    if (this._controlWordsParsers[clearedControlWord]) {
                         controlWordParserData = {
                             clearedControlWord: clearedControlWord,
                             controlWord: controlWord,
@@ -9618,7 +9622,7 @@
                             parseParams: parseParams,
                             param: param
                         };
-                        controlWordParseResult = this.controlWordsParsers[clearedControlWord].call(this, controlWordParserData);
+                        controlWordParseResult = this._controlWordsParsers[clearedControlWord].call(this, controlWordParserData);
                         parseResult = controlWordParseResult.parseResult;
                         parseParams = controlWordParseResult.parseParams;
                         controlWordParserData = null;
@@ -9697,7 +9701,7 @@
                 return null;
             },
 
-            controlWordsParsers: {
+            _controlWordsParsers: {
                 "'": function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -9749,6 +9753,63 @@
                         value: param / 20,
                         units: "pt"
                     };
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                charscalex: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        fontSize,
+                        param = options.param;
+
+                    if (parseParams.currentTextElement && parseParams.currentTextElement.dimensionCSSRules.fontSize) {
+                        fontSize = parseParams.currentTextElement.dimensionCSSRules.fontSize;
+                    } else if (parseParams.currentTextElementParent && parseParams.currentTextElementParent.dimensionCSSRules.fontSize) {
+                        fontSize = parseParams.currentTextElementParent.dimensionCSSRules.fontSize;
+                    }
+
+                    if (fontSize) {
+                        fontSize.value = Math.round(fontSize.value * param / 100);
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                expnd: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    if (param > 0) {
+                        el.dimensionCSSRules.letterSpacing = {
+                            value: param / 4,
+                            units: "pt"
+                        };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                expndtw: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    if (param > 0) {
+                        el.dimensionCSSRules.letterSpacing = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                    }
 
                     return {
                         parseParams: parseParams,
@@ -10201,6 +10262,21 @@
                         parseResult.options.zoom = param;
                     }
 
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                widowctrl: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        i;
+
+                    parseParams.pageData.attributes.spellcheck = true;
+
+                    for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                        parseResult.pages[i].attributes.spellcheck = parseParams.pageData.attributes.spellcheck;
+                    }
                     return {
                         parseParams: parseParams,
                         parseResult: parseResult

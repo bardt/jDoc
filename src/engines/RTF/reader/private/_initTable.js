@@ -4,7 +4,7 @@
  * @returns {*}
  * @private
  */
-jDoc.Engines.RTF.prototype._initTable = function (params) {
+jDoc.engines.RTF.prototype._initTable = function (params) {
     params = params || {};
 
     var data = params.params || {},
@@ -28,7 +28,9 @@ jDoc.Engines.RTF.prototype._initTable = function (params) {
             },
             attributes: jDoc.clone(data.attributes),
             dimensionCSSRules: jDoc.clone(data.dimensionCSSRules),
-            css: jDoc.clone(data.css)
+            css: jDoc.deepMerge({}, data.css, {
+                borderCollapse: "collapse"
+            })
         };
 
     delete table.options.isParagraph;
