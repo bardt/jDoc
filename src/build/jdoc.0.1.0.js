@@ -9353,6 +9353,9 @@
                         braceCounter: 0
                     },
                     parseResult = {
+                        options: {
+                            zoom: 100
+                        },
                         pages: [{
                             options: {},
                             css: {},
@@ -9553,21 +9556,6 @@
 
                 return table;
             },
-            _paragraphPropertiesForDelete: {
-                css: [],
-                dimensionCSSRules: [
-                    "margin",
-                    "marginTop",
-                    "marginBottom",
-                    "marginRight",
-                    "marginLeft",
-                    "padding",
-                    "paddingTop",
-                    "paddingBottom",
-                    "paddingRight",
-                    "paddingLeft"
-                ]
-            },
             /**
              *
              * @param text {String}
@@ -9665,13 +9653,8 @@
              * @private
              */
             _resetParagraphProperties: function (el) {
-                var i,
-                    deletedRules = this._paragraphPropertiesForDelete.dimensionCSSRules,
-                    len = deletedRules ? deletedRules.length : 0;
-
-                for (i = len - 1; i >= 0; i--) {
-                    delete el.dimensionCSSRules[deletedRules[i]];
-                }
+                el.css = {};
+                el.dimensionCSSRules = {};
 
                 return el;
             },
@@ -9744,6 +9727,34 @@
                         parseResult: parseResult
                     };
                 },
+                brdrs: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    el.css.borderStyle = "solid";
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                brdrw: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    el.dimensionCSSRules.borderWidth = {
+                        value: param / 20,
+                        units: "pt"
+                    };
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 fi: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -9786,7 +9797,7 @@
                         el = parseParams.currentTextElement || parseParams.currentTextElementParent;
 
                     if (param !== -1) {
-                        el.css.textDecoration = "line-through";
+                        el.css.fontStyle = "italic";
                     }
 
                     return {
@@ -9805,25 +9816,6 @@
                             units: "pt"
                         };
                     }
-
-                    return {
-                        parseParams: parseParams,
-                        parseResult: parseResult
-                    };
-                },
-                pard: function (options) {
-                    var parseParams = options.parseParams,
-                        parseResult = options.parseResult,
-                        page = parseResult.pages[parseParams.currentPageIndex];
-
-                    if (parseResult.table) {
-                        parseResult.table = this._destroyTable(parseParams);
-                        parseParams.currentElementIndex++;
-                        parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
-                        page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
-                        parseParams.currentTextElement = null;
-                    }
-                    this._resetParagraphProperties(parseParams.currentTextElementParent);
 
                     return {
                         parseParams: parseParams,
@@ -9973,6 +9965,18 @@
                     if (param !== -1) {
                         el.css.textDecoration = "line-through";
                     }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                'super': function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        el = parseParams.currentTextElement || parseParams.currentTextElementParent;
+
+                    el.css.verticalAlign = "super";
 
                     return {
                         parseParams: parseParams,
@@ -10188,6 +10192,33 @@
                         parseResult: parseResult
                     };
                 },
+                viewscale: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param;
+
+                    if (param) {
+                        parseResult.options.zoom = param;
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                jexpand: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    if (parseParams.currentTextElementParent) {
+                        parseParams.currentTextElementParent.css.textAlign = "justify";
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 par: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult;
@@ -10210,6 +10241,25 @@
                         parseParams.currentTextElementParent;
 
                     parseParams.currentTextElement = null;
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                pard: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        page = parseResult.pages[parseParams.currentPageIndex];
+
+                    if (parseResult.table) {
+                        parseResult.table = this._destroyTable(parseParams);
+                        parseParams.currentElementIndex++;
+                        parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
+                        page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
+                        parseParams.currentTextElement = null;
+                    }
+                    this._resetParagraphProperties(parseParams.currentTextElementParent);
 
                     return {
                         parseParams: parseParams,
@@ -10560,7 +10610,7 @@
                         parseResult: parseResult
                     };
                 },
-                trbrdrb: function (options) {
+                trbrdrt: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult;
 

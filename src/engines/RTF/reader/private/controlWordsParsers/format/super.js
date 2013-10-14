@@ -1,12 +1,9 @@
-jDoc.Engines.RTF.prototype.controlWordsParsers.i = function (options) {
+jDoc.Engines.RTF.prototype.controlWordsParsers['super'] = function (options) {
     var parseParams = options.parseParams,
         parseResult = options.parseResult,
-        param = options.param,
         el = parseParams.currentTextElement || parseParams.currentTextElementParent;
 
-    if (param !== -1) {
-        el.css.fontStyle = "italic";
-    }
+    el.css.verticalAlign = "super";
 
     return {
         parseParams: parseParams,

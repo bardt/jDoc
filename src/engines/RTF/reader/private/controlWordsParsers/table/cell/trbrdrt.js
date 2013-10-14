@@ -1,4 +1,4 @@
-jDoc.Engines.RTF.prototype.controlWordsParsers.trbrdrb = function (options) {
+jDoc.Engines.RTF.prototype.controlWordsParsers.trbrdrt = function (options) {
     var parseParams = options.parseParams,
         parseResult = options.parseResult;
 

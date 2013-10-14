@@ -1,12 +1,13 @@
-jDoc.Engines.RTF.prototype.controlWordsParsers.i = function (options) {
+jDoc.Engines.RTF.prototype.controlWordsParsers.brdrw = function (options) {
     var parseParams = options.parseParams,
         parseResult = options.parseResult,
         param = options.param,
         el = parseParams.currentTextElement || parseParams.currentTextElementParent;
 
-    if (param !== -1) {
-        el.css.fontStyle = "italic";
-    }
+    el.dimensionCSSRules.borderWidth = {
+        value: param / 20,
+        units: "pt"
+    };
 
     return {
         parseParams: parseParams,
