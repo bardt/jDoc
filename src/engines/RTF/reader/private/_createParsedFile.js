@@ -104,7 +104,13 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                                 textContent: ""
                             }
                         };
-                        parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                        if (parseParams.currentTextElementParent.options.isImage) {
+                            parseParams.currentTextElementParent.attributes.src = (
+                                parseParams.currentTextElementParent.attributes.src || ""
+                            ) + parseParams.currentTextElement.textContent;
+                        } else {
+                            parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                        }
                     }
                     parseParams.currentTextElement.properties.textContent += text[i];
                 }
@@ -133,7 +139,13 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                             textContent: ""
                         }
                     };
-                    parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                    if (parseParams.currentTextElementParent.options.isImage) {
+                        parseParams.currentTextElementParent.attributes.src = (
+                            parseParams.currentTextElementParent.attributes.src || ""
+                        ) + parseParams.currentTextElement.textContent;
+                    } else {
+                        parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                    }
                 }
                 if (text[i] === " " && text[i + 1] === " ") {
                     i += 1;

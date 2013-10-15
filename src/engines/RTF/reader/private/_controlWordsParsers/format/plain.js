@@ -1,4 +1,4 @@
-jDoc.engines.RTF.prototype._controlWordsParsers.b = function (options) {
+jDoc.engines.RTF.prototype._controlWordsParsers.plain = function (options) {
     var parseParams = options.parseParams,
         parseResult = options.parseResult,
         el = parseParams.currentTextElement || parseParams.currentTextElementParent;

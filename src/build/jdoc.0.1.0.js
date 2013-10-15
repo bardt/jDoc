@@ -9034,6 +9034,22 @@
      * @returns {string}
      * @private
      */
+    jDoc.Engine.prototype._getEmDash = function () {
+        return "—";
+    };
+    /**
+     *
+     * @returns {string}
+     * @private
+     */
+    jDoc.Engine.prototype._getEnDash = function () {
+        return "–";
+    };
+    /**
+     *
+     * @returns {string}
+     * @private
+     */
     jDoc.Engine.prototype._getHalfTabAsSpaces = function () {
         return "\u2000\u2000";
     };
@@ -9398,7 +9414,13 @@
                                             textContent: ""
                                         }
                                     };
-                                    parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                                    if (parseParams.currentTextElementParent.options.isImage) {
+                                        parseParams.currentTextElementParent.attributes.src = (
+                                            parseParams.currentTextElementParent.attributes.src || ""
+                                        ) + parseParams.currentTextElement.textContent;
+                                    } else {
+                                        parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                                    }
                                 }
                                 parseParams.currentTextElement.properties.textContent += text[i];
                             }
@@ -9427,7 +9449,13 @@
                                         textContent: ""
                                     }
                                 };
-                                parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                                if (parseParams.currentTextElementParent.options.isImage) {
+                                    parseParams.currentTextElementParent.attributes.src = (
+                                        parseParams.currentTextElementParent.attributes.src || ""
+                                    ) + parseParams.currentTextElement.textContent;
+                                } else {
+                                    parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                                }
                             }
                             if (text[i] === " " && text[i + 1] === " ") {
                                 i += 1;
@@ -9485,6 +9513,28 @@
                 "info": true,
                 "fldrslt": true,
                 "field": true
+            },
+            /**
+             *
+             * @param params
+             * @returns {*}
+             * @private
+             */
+            _initImage: function (params) {
+                params = params || {};
+
+                var data = params.data,
+                    image = {
+                        options: {
+                            isImage: true
+                        },
+                        properties: data && data.properties ? jDoc.clone(data.properties) : {},
+                        attributes: data && data.attributes ? jDoc.clone(data.attributes) : {},
+                        css: data && data.css ? jDoc.clone(data.css) : {},
+                        dimensionCSSRules: data && data.dimensionCSSRules ? jDoc.clone(data.dimensionCSSRules) : {}
+                    };
+
+                return image;
             },
             /**
              *
@@ -9716,6 +9766,15 @@
                         parseResult: parseResult
                     };
                 },
+                ab: function (options) {
+                    return this._controlWordsParsers.b.apply(this, arguments);
+                },
+                afs: function (options) {
+                    return this._controlWordsParsers.fs.apply(this, arguments);
+                },
+                ai: function () {
+                    return this._controlWordsParsers.i.apply(this, arguments);
+                },
                 b: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -9773,6 +9832,32 @@
 
                     if (fontSize) {
                         fontSize.value = Math.round(fontSize.value * param / 100);
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                emdash: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    if (parseParams.currentTextElement) {
+                        parseParams.currentTextElement.properties.textContent += this._getEmDash();
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                endash: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    if (parseParams.currentTextElement) {
+                        parseParams.currentTextElement.properties.textContent += this._getEnDash();
                     }
 
                     return {
@@ -9883,7 +9968,18 @@
                         parseResult: parseResult
                     };
                 },
-                b: function (options) {
+                ltrch: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    parseParams.currentTextElementParent.css.direction = "ltr";
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                plain: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
                         el = parseParams.currentTextElement || parseParams.currentTextElementParent;
@@ -9962,6 +10058,17 @@
                             units: "pt"
                         };
                     }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                rtlch: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    parseParams.currentTextElementParent.css.direction = "rtl";
 
                     return {
                         parseParams: parseParams,
@@ -10163,6 +10270,23 @@
                             parseParams.currentTextElementParent.dimensionCSSRules.width.value * param / 100
                         );
                     }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                /**
+                 *
+                 * @param options
+                 */
+                pict: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult;
+
+                    parseParams.currentTextElementParent = this._initImage({
+                        data: parseParams.currentTextElementParent
+                    });
 
                     return {
                         parseParams: parseParams,
