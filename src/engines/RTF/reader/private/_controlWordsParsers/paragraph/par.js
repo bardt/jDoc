@@ -8,11 +8,8 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
      * inherit previous paragraph
      * @type {*}
      */
-    parseParams.currentTextElementParent = jDoc.deepMerge({}, (
-        (
-            parseParams.currentTextElementParent && parseParams.currentTextElementParent.options.isParagraph
-        ) ? parseParams.currentTextElementParent : parseParams.paragraphData
-    ), {
+
+    parseParams.currentTextElementParent = jDoc.deepMerge({}, parseParams.paragraphData, {
         elements: []
     });
 

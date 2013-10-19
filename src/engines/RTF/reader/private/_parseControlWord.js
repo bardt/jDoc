@@ -12,11 +12,15 @@ jDoc.engines.RTF.prototype._parseControlWord = function (text, index, parseParam
         clearedControlWord,
         controlWordParseResult,
         param,
+        continueSearchControlWord = true,
         controlWord = "",
         controlWordParserData = "";
 
     while (text[index] !== ' ' && text[index] !== '\\' && text[index] !== '{' && text[index] !== '}') {
-        if (text[index] !== '\r' && text[index] !== '\n') {
+        if (controlWord !== "" && (text[index] === '\r' || text[index] === '\n')) {
+            continueSearchControlWord = false;
+        }
+        if (continueSearchControlWord) {
             controlWord += text[index];
         }
         if (text[index] === '*') {

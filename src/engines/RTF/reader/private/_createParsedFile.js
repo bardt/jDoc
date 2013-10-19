@@ -14,7 +14,9 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                     dimensionCSSRules: {}
                 },
                 table: {
-                    css: {},
+                    css: {
+                        width: "100%"
+                    },
                     dimensionCSSRules: {}
                 },
                 rows: {
@@ -127,6 +129,17 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
             }
             parseParams.braceCounter -= 1;
             i += 1;
+            if (parseParams.currentTextElement) {
+                parseParams.currentTextElement = {
+                    options: {},
+                    css: {},
+                    dimensionCSSRules: {},
+                    properties: {
+                        textContent: ""
+                    }
+                };
+                parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+            }
             break;
         default:
             if (!parseParams.ignoreGroups.length) {

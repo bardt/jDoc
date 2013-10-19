@@ -9324,7 +9324,9 @@
                                 dimensionCSSRules: {}
                             },
                             table: {
-                                css: {},
+                                css: {
+                                    width: "100%"
+                                },
                                 dimensionCSSRules: {}
                             },
                             rows: {
@@ -9437,6 +9439,17 @@
                         }
                         parseParams.braceCounter -= 1;
                         i += 1;
+                        if (parseParams.currentTextElement) {
+                            parseParams.currentTextElement = {
+                                options: {},
+                                css: {},
+                                dimensionCSSRules: {},
+                                properties: {
+                                    textContent: ""
+                                }
+                            };
+                            parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
+                        }
                         break;
                     default:
                         if (!parseParams.ignoreGroups.length) {
@@ -9523,16 +9536,17 @@
             _initImage: function (params) {
                 params = params || {};
 
-                var data = params.data,
-                    image = {
-                        options: {
-                            isImage: true
-                        },
-                        properties: data && data.properties ? jDoc.clone(data.properties) : {},
-                        attributes: data && data.attributes ? jDoc.clone(data.attributes) : {},
-                        css: data && data.css ? jDoc.clone(data.css) : {},
-                        dimensionCSSRules: data && data.dimensionCSSRules ? jDoc.clone(data.dimensionCSSRules) : {}
-                    };
+                var image = jDoc.deepMerge(params.data || {}, {
+                    options: {
+                        isImage: true
+                    },
+                    properties: {},
+                    attributes: {},
+                    css: {},
+                    dimensionCSSRules: {}
+                });
+
+                delete image.options.isParagraph;
 
                 return image;
             },
@@ -9624,11 +9638,15 @@
                     clearedControlWord,
                     controlWordParseResult,
                     param,
+                    continueSearchControlWord = true,
                     controlWord = "",
                     controlWordParserData = "";
 
                 while (text[index] !== ' ' && text[index] !== '\\' && text[index] !== '{' && text[index] !== '}') {
-                    if (text[index] !== '\r' && text[index] !== '\n') {
+                    if (controlWord !== "" && (text[index] === '\r' || text[index] === '\n')) {
+                        continueSearchControlWord = false;
+                    }
+                    if (continueSearchControlWord) {
                         controlWord += text[index];
                     }
                     if (text[index] === '*') {
@@ -9968,6 +9986,35 @@
                         parseResult: parseResult
                     };
                 },
+                /**
+                 *
+                 * @param options
+                 * @returns {*}
+                 */
+                lin: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        propertyName,
+                        param = options.param;
+
+                    if (parseParams.currentTextElementParent) {
+                        if (parseParams.currentTextElementParent.css.direction === "rtl") {
+                            propertyName = "paddingRight";
+                        } else {
+                            propertyName = "paddingLeft";
+                        }
+
+                        parseParams.currentTextElementParent.dimensionCSSRules[propertyName] = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 ltrch: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult;
@@ -10054,6 +10101,35 @@
 
                     if (param > 0) {
                         parseParams.currentTextElementParent.dimensionCSSRules.paddingRight = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                /**
+                 *
+                 * @param options
+                 * @returns {*}
+                 */
+                rin: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        propertyName,
+                        param = options.param;
+
+                    if (parseParams.currentTextElementParent) {
+                        if (parseParams.currentTextElementParent.css.direction === "rtl") {
+                            propertyName = "paddingLeft";
+                        } else {
+                            propertyName = "paddingRight";
+                        }
+
+                        parseParams.currentTextElementParent.dimensionCSSRules[propertyName] = {
                             value: param / 20,
                             units: "pt"
                         };
@@ -10348,6 +10424,27 @@
                         parseResult: parseResult
                     };
                 },
+                margbsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.paddingBottom) {
+                        parseParams.pageData.dimensionCSSRules.paddingBottom = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
+                        }
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 margl: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -10360,6 +10457,27 @@
                     };
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                marglsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.paddingLeft) {
+                        parseParams.pageData.dimensionCSSRules.paddingLeft = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
+                        }
                     }
 
                     return {
@@ -10385,6 +10503,28 @@
                         parseResult: parseResult
                     };
                 },
+                margrsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.paddingRight) {
+                        parseParams.pageData.dimensionCSSRules.paddingRight = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.paddingRight = parseParams.pageData.dimensionCSSRules.paddingRight;
+                        }
+
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 margt: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -10397,6 +10537,27 @@
                     };
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                margtsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.paddingTop) {
+                        parseParams.pageData.dimensionCSSRules.paddingTop = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
+                        }
                     }
 
                     return {
@@ -10461,6 +10622,48 @@
                         parseResult: parseResult
                     };
                 },
+                pghsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.height) {
+                        parseParams.pageData.dimensionCSSRules.height = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
+                        }
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                pgwsxn: function (options) {
+                    var parseParams = options.parseParams,
+                        parseResult = options.parseResult,
+                        param = options.param,
+                        i;
+
+                    if (!parseParams.pageData.dimensionCSSRules.width) {
+                        parseParams.pageData.dimensionCSSRules.width = {
+                            value: param / 20,
+                            units: "pt"
+                        };
+                        for (i = parseResult.pages.length - 1; i >= 0; i--) {
+                            parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
+                        }
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
                 viewscale: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
@@ -10513,11 +10716,8 @@
                      * inherit previous paragraph
                      * @type {*}
                      */
-                    parseParams.currentTextElementParent = jDoc.deepMerge({}, (
-                        (
-                            parseParams.currentTextElementParent && parseParams.currentTextElementParent.options.isParagraph
-                        ) ? parseParams.currentTextElementParent : parseParams.paragraphData
-                    ), {
+
+                    parseParams.currentTextElementParent = jDoc.deepMerge({}, parseParams.paragraphData, {
                         elements: []
                     });
 
@@ -10562,7 +10762,7 @@
 
                     row = row || this._initRow();
 
-                    table = this._initTable({
+                    table = table || this._initTable({
                         table: table,
                         row: row,
                         parseParams: parseParams,
@@ -10621,7 +10821,7 @@
 
                     row = row || this._initRow();
 
-                    table = this._initTable({
+                    table = table || this._initTable({
                         table: table,
                         row: row,
                         parseParams: parseParams,
