@@ -52,7 +52,14 @@ jDoc.engines.RTF.prototype._controlWordsParsers.cell = function (options) {
         dimensionCSSRules: {},
         elements: []
     };
-    parseParams.currentTextElement = null;
+    parseParams.currentTextElement = {
+        options: {},
+        css: {},
+        dimensionCSSRules: {},
+        properties: {
+            textContent: ""
+        }
+    };
 
     return {
         parseParams: parseParams,

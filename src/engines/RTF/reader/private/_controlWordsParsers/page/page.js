@@ -5,7 +5,14 @@ jDoc.engines.RTF.prototype._controlWordsParsers.page = function (options) {
 
     parseResult.table = this._destroyTable(parseParams);
     parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
-    parseParams.currentTextElement = null;
+    parseParams.currentTextElement = {
+        options: {},
+        css: {},
+        dimensionCSSRules: {},
+        properties: {
+            textContent: ""
+        }
+    };
     parseParams.currentPageIndex++;
     parseParams.currentElementIndex = 0;
 

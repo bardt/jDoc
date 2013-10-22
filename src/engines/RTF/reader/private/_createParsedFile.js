@@ -6,6 +6,7 @@
  */
 jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
     var i = 0,
+        textContent,
         parseParams = {
             unParsedControlWords: {},
             styles: {
@@ -54,6 +55,7 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                 dimensionCSSRules: {},
                 elements: []
             },
+            hexWordsMask: (/^'/),
             currentTextElementParent: null,
             currentTextElement: null,
             currentPageIndex: 0,
@@ -76,12 +78,20 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                     },
                     css: {},
                     dimensionCSSRules: {},
-                    elements: []
+                    elements: [{
+                        options: {},
+                        css: {},
+                        dimensionCSSRules: {},
+                        properties: {
+                            textContent: ""
+                        }
+                    }]
                 }]
             }]
         };
 
     parseParams.currentTextElementParent = parseResult.pages[0].elements[0];
+    parseParams.currentTextElement = parseParams.currentTextElementParent.elements[0];
 
     while (text[i]) {
         switch (text[i]) {
@@ -109,12 +119,18 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                         if (parseParams.currentTextElementParent.options.isImage) {
                             parseParams.currentTextElementParent.attributes.src = (
                                 parseParams.currentTextElementParent.attributes.src || ""
-                            ) + parseParams.currentTextElement.textContent;
+                            ) + parseParams.currentTextElement.properties.textContent;
                         } else {
                             parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                         }
                     }
-                    parseParams.currentTextElement.properties.textContent += text[i];
+                    if (parseParams.currentTextElementParent.options.isImage) {
+                        parseParams.currentTextElementParent.attributes.src = (
+                            parseParams.currentTextElementParent.attributes.src || ""
+                        ) + text[i];
+                    } else {
+                        parseParams.currentTextElement.properties.textContent += text[i];
+                    }
                 }
                 i += 1;
             }
@@ -142,6 +158,7 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
             }
             break;
         default:
+            textContent = "";
             if (!parseParams.ignoreGroups.length) {
                 if (!parseParams.currentTextElement) {
                     parseParams.currentTextElement = {
@@ -155,16 +172,24 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                     if (parseParams.currentTextElementParent.options.isImage) {
                         parseParams.currentTextElementParent.attributes.src = (
                             parseParams.currentTextElementParent.attributes.src || ""
-                        ) + parseParams.currentTextElement.textContent;
+                        ) + parseParams.currentTextElement.properties.textContent;
                     } else {
                         parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                     }
                 }
                 if (text[i] === " " && text[i + 1] === " ") {
                     i += 1;
-                    parseParams.currentTextElement.properties.textContent += this._getHalfTabAsSpaces();
+                    textContent = this._getHalfTabAsSpaces();
                 } else {
-                    parseParams.currentTextElement.properties.textContent += text[i];
+                    textContent = text[i];
+                }
+
+                if (parseParams.currentTextElementParent.options.isImage) {
+                    parseParams.currentTextElementParent.attributes.src = (
+                        parseParams.currentTextElementParent.attributes.src || ""
+                    ) + textContent;
+                } else {
+                    parseParams.currentTextElement.properties.textContent += textContent;
                 }
             }
             i += 1;

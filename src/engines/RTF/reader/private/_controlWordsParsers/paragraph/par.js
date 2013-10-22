@@ -16,7 +16,14 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
     parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
         parseParams.currentTextElementParent;
 
-    parseParams.currentTextElement = null;
+    parseParams.currentTextElement = {
+        options: {},
+        css: {},
+        dimensionCSSRules: {},
+        properties: {
+            textContent: ""
+        }
+    };
 
     return {
         parseParams: parseParams,

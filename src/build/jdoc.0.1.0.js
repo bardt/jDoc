@@ -9055,6 +9055,27 @@
     };
     /**
      *
+     * @param element
+     * @returns {*}
+     * @private
+     */
+    jDoc.Engine.prototype._getMaxFontSize = function (element) {
+        var i,
+            len = element.elements ? element.elements.length : 0,
+            fontSize = (
+                element.dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value
+            ) || 0;
+
+        for (i = len - 1; i >= 0; i--) {
+            if (element.elements[i].dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value > fontSize) {
+                fontSize = element.dimensionCSSRules.fontSize.value;
+            }
+        }
+
+        return fontSize;
+    };
+    /**
+     *
      * @returns {string}
      * @private
      */
@@ -9302,6 +9323,16 @@
         });
     };
     /**
+     *
+     * @param str
+     * @returns {string}
+     * @private
+     */
+    jDoc.Engine.prototype._replaceSpaces = function (str) {
+        str = (str || "").replace(/\s{2,}/g, this._getHalfTabAsSpaces());
+        return str;
+    };
+    /**
      * @constructor
      * @type {Object}
      */
@@ -9316,6 +9347,7 @@
              */
             _createParsedFile: function (text, callback) {
                 var i = 0,
+                    textContent,
                     parseParams = {
                         unParsedControlWords: {},
                         styles: {
@@ -9364,6 +9396,7 @@
                             dimensionCSSRules: {},
                             elements: []
                         },
+                        hexWordsMask: (/^'/),
                         currentTextElementParent: null,
                         currentTextElement: null,
                         currentPageIndex: 0,
@@ -9386,12 +9419,20 @@
                                 },
                                 css: {},
                                 dimensionCSSRules: {},
-                                elements: []
+                                elements: [{
+                                    options: {},
+                                    css: {},
+                                    dimensionCSSRules: {},
+                                    properties: {
+                                        textContent: ""
+                                    }
+                                }]
                             }]
                         }]
                     };
 
                 parseParams.currentTextElementParent = parseResult.pages[0].elements[0];
+                parseParams.currentTextElement = parseParams.currentTextElementParent.elements[0];
 
                 while (text[i]) {
                     switch (text[i]) {
@@ -9419,12 +9460,18 @@
                                     if (parseParams.currentTextElementParent.options.isImage) {
                                         parseParams.currentTextElementParent.attributes.src = (
                                             parseParams.currentTextElementParent.attributes.src || ""
-                                        ) + parseParams.currentTextElement.textContent;
+                                        ) + parseParams.currentTextElement.properties.textContent;
                                     } else {
                                         parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                                     }
                                 }
-                                parseParams.currentTextElement.properties.textContent += text[i];
+                                if (parseParams.currentTextElementParent.options.isImage) {
+                                    parseParams.currentTextElementParent.attributes.src = (
+                                        parseParams.currentTextElementParent.attributes.src || ""
+                                    ) + text[i];
+                                } else {
+                                    parseParams.currentTextElement.properties.textContent += text[i];
+                                }
                             }
                             i += 1;
                         }
@@ -9452,6 +9499,7 @@
                         }
                         break;
                     default:
+                        textContent = "";
                         if (!parseParams.ignoreGroups.length) {
                             if (!parseParams.currentTextElement) {
                                 parseParams.currentTextElement = {
@@ -9465,16 +9513,24 @@
                                 if (parseParams.currentTextElementParent.options.isImage) {
                                     parseParams.currentTextElementParent.attributes.src = (
                                         parseParams.currentTextElementParent.attributes.src || ""
-                                    ) + parseParams.currentTextElement.textContent;
+                                    ) + parseParams.currentTextElement.properties.textContent;
                                 } else {
                                     parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                                 }
                             }
                             if (text[i] === " " && text[i + 1] === " ") {
                                 i += 1;
-                                parseParams.currentTextElement.properties.textContent += this._getHalfTabAsSpaces();
+                                textContent = this._getHalfTabAsSpaces();
                             } else {
-                                parseParams.currentTextElement.properties.textContent += text[i];
+                                textContent = text[i];
+                            }
+
+                            if (parseParams.currentTextElementParent.options.isImage) {
+                                parseParams.currentTextElementParent.attributes.src = (
+                                    parseParams.currentTextElementParent.attributes.src || ""
+                                ) + textContent;
+                            } else {
+                                parseParams.currentTextElement.properties.textContent += textContent;
                             }
                         }
                         i += 1;
@@ -9635,37 +9691,45 @@
              */
             _parseControlWord: function (text, index, parseParams, parseResult) {
                 var match,
+                    matchedPart,
                     clearedControlWord,
                     controlWordParseResult,
                     param,
-                    continueSearchControlWord = true,
+                    paramText = "",
                     controlWord = "",
                     controlWordParserData = "";
 
-                while (text[index] !== ' ' && text[index] !== '\\' && text[index] !== '{' && text[index] !== '}') {
-                    if (controlWord !== "" && (text[index] === '\r' || text[index] === '\n')) {
-                        continueSearchControlWord = false;
+                while (text[index] !== '\\' && text[index] !== '{' && text[index] !== '}') {
+                    if (text[index] === ' ' && !parseParams.hexWordsMask.test(controlWord)) {
+                        break;
                     }
-                    if (continueSearchControlWord) {
-                        controlWord += text[index];
+
+                    if (text[index] !== '\r' && text[index] !== '\n') {
+                        if (text[index] === '*') {
+                            parseParams.ignoreGroups.push(parseParams.braceCounter);
+                        } else {
+                            controlWord += text[index];
+                        }
+                    } else if (controlWord[0]) {
+                        break;
                     }
-                    if (text[index] === '*') {
-                        parseParams.ignoreGroups.push(parseParams.braceCounter);
-                    }
+
                     index += 1;
                 }
                 index += text[index] === ' ' ? 1 : 0;
 
                 if (controlWord[0] === "'") {
                     /**
-                     * +1 - exclude ' symbol
-                     * @type {number}
+                     * @type {Array|null}
                      */
-                    match = controlWord.search(/'[a-z0-9]+$/gi) + 1;
+                    matchedPart = controlWord.match(/[a-z0-9]+/gi);
 
-                    if (match) {
-                        param = controlWord.substr(match);
-                        controlWord = controlWord.substr(0, match);
+                    if (matchedPart) {
+                        param = matchedPart[0];
+
+                        matchedPart = controlWord.match(/[^a-z0-9]+$/gi);
+                        paramText = matchedPart ? matchedPart[0] : "";
+                        controlWord = "'";
                         clearedControlWord = controlWord;
                     }
                 } else {
@@ -9688,6 +9752,7 @@
                             controlWord: controlWord,
                             parseResult: parseResult,
                             parseParams: parseParams,
+                            paramText: paramText,
                             param: param
                         };
                         controlWordParseResult = this._controlWordsParsers[clearedControlWord].call(this, controlWordParserData);
@@ -9773,10 +9838,15 @@
                 "'": function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
+                        paramText = options.paramText || "",
                         param = options.param;
 
-                    if (parseParams.currentTextElement && isNaN(param)) {
-                        parseParams.currentTextElement.properties.textContent += this._getCharFromHex(param);
+                    if (parseParams.currentTextElement) {
+                        /*if (isNaN(param)) {
+                    parseParams.currentTextElement.properties.textContent += this._getCharFromHex(param);
+                }*/
+
+                        parseParams.currentTextElement.properties.textContent += paramText;
                     }
 
                     return {
@@ -10203,12 +10273,21 @@
                 sl: function (options) {
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
-                        param = Math.abs((options.param && options.param !== -1) || 0),
+                        param = (options.param !== -1 && options.param) || 0,
                         el = parseParams.currentTextElement || parseParams.currentTextElementParent;
 
                     if (param > 0) {
+                        param /= 20;
+
+                        if (!el.dimensionCSSRules.fontSize || this._getMaxFontSize(el) <= param) {
+                            el.dimensionCSSRules.lineHeight = {
+                                value: param,
+                                units: "pt"
+                            };
+                        }
+                    } else if (param < 0) {
                         el.dimensionCSSRules.lineHeight = {
-                            value: param / 20,
+                            value: Math.abs(param) / 20,
                             units: "pt"
                         };
                     }
@@ -10268,6 +10347,20 @@
                             value: param / 20,
                             units: "pt"
                         };
+                    }
+
+                    return {
+                        parseParams: parseParams,
+                        parseResult: parseResult
+                    };
+                },
+                u: function (options) {
+                    var parseParams = options.parseParams,
+                        param = options.param,
+                        parseResult = options.parseResult;
+
+                    if (parseParams.currentTextElement && param) {
+                        parseParams.currentTextElement.properties.textContent += String.fromCharCode(param);
                     }
 
                     return {
@@ -10572,7 +10665,14 @@
 
                     parseResult.table = this._destroyTable(parseParams);
                     parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
-                    parseParams.currentTextElement = null;
+                    parseParams.currentTextElement = {
+                        options: {},
+                        css: {},
+                        dimensionCSSRules: {},
+                        properties: {
+                            textContent: ""
+                        }
+                    };
                     parseParams.currentPageIndex++;
                     parseParams.currentElementIndex = 0;
 
@@ -10724,7 +10824,14 @@
                     parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
                         parseParams.currentTextElementParent;
 
-                    parseParams.currentTextElement = null;
+                    parseParams.currentTextElement = {
+                        options: {},
+                        css: {},
+                        dimensionCSSRules: {},
+                        properties: {
+                            textContent: ""
+                        }
+                    };
 
                     return {
                         parseParams: parseParams,
@@ -10802,7 +10909,14 @@
                         dimensionCSSRules: {},
                         elements: []
                     };
-                    parseParams.currentTextElement = null;
+                    parseParams.currentTextElement = {
+                        options: {},
+                        css: {},
+                        dimensionCSSRules: {},
+                        properties: {
+                            textContent: ""
+                        }
+                    };
 
                     return {
                         parseParams: parseParams,
