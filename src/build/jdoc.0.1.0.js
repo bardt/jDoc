@@ -9397,6 +9397,9 @@
                             elements: []
                         },
                         hexWordsMask: (/^'/),
+                        pageContentHeight: 0,
+                        pageContentWidth: 0,
+                        pageHeight: 0,
                         currentTextElementParent: null,
                         currentTextElement: null,
                         currentPageIndex: 0,
@@ -10337,23 +10340,6 @@
                         parseResult: parseResult
                     };
                 },
-                tx: function (options) {
-                    var parseParams = options.parseParams,
-                        parseResult = options.parseResult,
-                        param = options.param;
-
-                    if (param > 0 && parseParams.currentTextElement) {
-                        parseParams.currentTextElement.dimensionCSSRules.paddingLeft = {
-                            value: param / 20,
-                            units: "pt"
-                        };
-                    }
-
-                    return {
-                        parseParams: parseParams,
-                        parseResult: parseResult
-                    };
-                },
                 u: function (options) {
                     var parseParams = options.parseParams,
                         param = options.param,
@@ -10508,6 +10494,7 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
                     }
@@ -10528,6 +10515,7 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
                         }
@@ -10548,6 +10536,7 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
                     }
@@ -10568,6 +10557,7 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
                         }
@@ -10588,6 +10578,7 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingRight = parseParams.pageData.dimensionCSSRules.paddingRight;
                     }
@@ -10607,6 +10598,7 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingRight = parseParams.pageData.dimensionCSSRules.paddingRight;
                         }
@@ -10628,6 +10620,7 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
                     }
@@ -10648,6 +10641,7 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
                         }
@@ -10675,6 +10669,7 @@
                     };
                     parseParams.currentPageIndex++;
                     parseParams.currentElementIndex = 0;
+                    parseParams.pageContentHeight = 0;
 
                     page = jDoc.clone(parseParams.pageData);
                     parseResult.pages[parseParams.currentPageIndex] = page;
@@ -10695,6 +10690,11 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    if (parseParams.pageContentHeight > 0) {
+                        parseParams.pageContentHeight = 0;
+                    }
+
+                    parseParams.pageContentHeight += parseParams.pageData.dimensionCSSRules.height.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
                     }
@@ -10713,6 +10713,10 @@
                         value: param / 20,
                         units: "pt"
                     };
+                    if (parseParams.pageContentWidth > 0) {
+                        parseParams.pageContentWidth = 0;
+                    }
+                    parseParams.pageContentWidth = parseParams.pageData.dimensionCSSRules.width.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
                     }
@@ -10733,6 +10737,10 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        if (parseParams.pageContentHeight > 0) {
+                            parseParams.pageContentHeight = 0;
+                        }
+                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.height.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
                         }
@@ -10754,6 +10762,10 @@
                             value: param / 20,
                             units: "pt"
                         };
+                        if (parseParams.pageContentWidth > 0) {
+                            parseParams.pageContentWidth = 0;
+                        }
+                        parseParams.pageContentWidth = parseParams.pageData.dimensionCSSRules.width.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
                         }
@@ -10811,6 +10823,8 @@
                         parseResult = options.parseResult;
 
                     parseParams.currentElementIndex++;
+
+                    console.log("page", parseParams.pageContentHeight, parseParams.pageContentWidth);
 
                     /**
                      * inherit previous paragraph

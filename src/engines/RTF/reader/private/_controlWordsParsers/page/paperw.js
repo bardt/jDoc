@@ -8,6 +8,10 @@ jDoc.engines.RTF.prototype._controlWordsParsers.paperw = function (options) {
         value: param / 20,
         units: "pt"
     };
+    if (parseParams.pageWidth > 0) {
+        parseParams.pageWidth = 0;
+    }
+    parseParams.pageWidth = parseParams.pageData.dimensionCSSRules.width.value;
     for (i = parseResult.pages.length - 1; i >= 0; i--) {
         parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
     }

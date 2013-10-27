@@ -56,6 +56,9 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                 elements: []
             },
             hexWordsMask: (/^'/),
+            pageContentHeight: 0,
+            pageHeight: 0,
+            pageWidth: 0,
             currentTextElementParent: null,
             currentTextElement: null,
             currentPageIndex: 0,

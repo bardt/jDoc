@@ -15,6 +15,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.page = function (options) {
     };
     parseParams.currentPageIndex++;
     parseParams.currentElementIndex = 0;
+    parseParams.pageContentHeight = 0;
 
     page = jDoc.clone(parseParams.pageData);
     parseResult.pages[parseParams.currentPageIndex] = page;

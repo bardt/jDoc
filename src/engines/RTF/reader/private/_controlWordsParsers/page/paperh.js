@@ -8,6 +8,11 @@ jDoc.engines.RTF.prototype._controlWordsParsers.paperh = function (options) {
         value: param / 20,
         units: "pt"
     };
+    if (parseParams.pageHeight > 0) {
+        parseParams.pageHeight = 0;
+    }
+
+    parseParams.pageHeight += parseParams.pageData.dimensionCSSRules.height.value;
     for (i = parseResult.pages.length - 1; i >= 0; i--) {
         parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
     }

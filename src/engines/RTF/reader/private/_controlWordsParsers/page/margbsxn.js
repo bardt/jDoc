@@ -9,6 +9,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.margbsxn = function (options) {
             value: param / 20,
             units: "pt"
         };
+        parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
         for (i = parseResult.pages.length - 1; i >= 0; i--) {
             parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
         }

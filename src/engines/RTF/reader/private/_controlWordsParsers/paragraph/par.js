@@ -1,6 +1,11 @@
 jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
     var parseParams = options.parseParams,
+        paragraphHeight,
         parseResult = options.parseResult;
+
+    if (parseParams.currentTextElementParent) {
+
+    }
 
     parseParams.currentElementIndex++;
 

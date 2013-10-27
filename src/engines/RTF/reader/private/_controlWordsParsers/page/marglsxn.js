@@ -9,6 +9,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.marglsxn = function (options) {
             value: param / 20,
             units: "pt"
         };
+        parseParams.pageWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
         for (i = parseResult.pages.length - 1; i >= 0; i--) {
             parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
         }
