@@ -12,8 +12,8 @@ jDoc.Engine.prototype._getMaxFontSize = function (element) {
         ) || 0;
 
     for (i = len - 1; i >= 0; i--) {
-        if (element.elements[i].dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value > fontSize) {
-            fontSize = element.dimensionCSSRules.fontSize.value;
+        if (element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value > fontSize) {
+            fontSize = element.elements[i].dimensionCSSRules.fontSize.value;
         }
     }
 

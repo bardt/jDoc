@@ -540,7 +540,7 @@ jDoc.Engine.prototype = {
         options.parentFontSize = options.parentFontSize || 1;
 
         var len = options.el.textContent ? options.el.textContent.length : 0,
-            height = (
+            height = Math.ceil(
                 (len * options.fontSize) / options.width
             ) * (
                 (

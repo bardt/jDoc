@@ -4,7 +4,9 @@
  * @private
  */
 jDoc.engines.RTF.prototype._resetParagraphProperties = function (el) {
-    el.css = {};
+    el.css = {
+        margin: "0"
+    };
     el.dimensionCSSRules = {};
 
     return el;

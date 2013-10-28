@@ -3,8 +3,19 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
         paragraphHeight,
         parseResult = options.parseResult;
 
-    if (parseParams.currentTextElementParent) {
+    if (parseParams.currentTextElementParent && parseParams.pageWidth && parseParams.pageHeight) {
+        paragraphHeight = this._getElementHeight(parseParams.currentTextElementParent, {
+            width: parseParams.pageWidth
+        });
 
+        if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
+            this._createNewPage(options);
+            parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
+                parseParams.currentTextElementParent;
+            parseParams.pageContentHeight = paragraphHeight;
+        }
+
+        parseParams.pageContentHeight += paragraphHeight;
     }
 
     parseParams.currentElementIndex++;

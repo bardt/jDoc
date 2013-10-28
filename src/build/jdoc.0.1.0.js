@@ -8975,7 +8975,7 @@
             options.parentFontSize = options.parentFontSize || 1;
 
             var len = options.el.textContent ? options.el.textContent.length : 0,
-                height = (
+                height = Math.ceil(
                     (len * options.fontSize) / options.width
                 ) * (
                     (
@@ -9067,8 +9067,8 @@
             ) || 0;
 
         for (i = len - 1; i >= 0; i--) {
-            if (element.elements[i].dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value > fontSize) {
-                fontSize = element.dimensionCSSRules.fontSize.value;
+            if (element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value > fontSize) {
+                fontSize = element.elements[i].dimensionCSSRules.fontSize.value;
             }
         }
 
@@ -9339,6 +9339,34 @@
     jDoc.engines.RTF = jDoc.Engine.extend(
         /** @lends jDoc.engines.RTF.prototype */
         {
+            _createNewPage: function (options) {
+                var parseParams = options.parseParams,
+                    page,
+                    parseResult = options.parseResult;
+
+                parseResult.table = this._destroyTable(parseParams);
+                parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
+                parseParams.currentTextElement = {
+                    options: {},
+                    css: {},
+                    dimensionCSSRules: {},
+                    properties: {
+                        textContent: ""
+                    }
+                };
+                parseParams.currentPageIndex++;
+                parseParams.currentElementIndex = 0;
+                parseParams.pageContentHeight = 0;
+
+                page = jDoc.clone(parseParams.pageData);
+                parseResult.pages[parseParams.currentPageIndex] = page;
+                page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
+
+                return {
+                    parseParams: parseParams,
+                    parseResult: parseResult
+                };
+            },
             /**
              *
              * @param text
@@ -9392,14 +9420,16 @@
                             options: {
                                 isParagraph: true
                             },
-                            css: {},
+                            css: {
+                                margin: "0"
+                            },
                             dimensionCSSRules: {},
                             elements: []
                         },
                         hexWordsMask: (/^'/),
                         pageContentHeight: 0,
-                        pageContentWidth: 0,
                         pageHeight: 0,
+                        pageWidth: 0,
                         currentTextElementParent: null,
                         currentTextElement: null,
                         currentPageIndex: 0,
@@ -9578,6 +9608,64 @@
                 extension: ['rtf'],
                 mime: ['text/rtf', 'application/rtf']
             }],
+            /**
+             *
+             * @param element
+             * @param options
+             * @returns {number}
+             * @private
+             */
+            _getElementHeight: function (element, options) {
+                options = options || {};
+
+                var height = (element.dimensionCSSRules.height && element.dimensionCSSRules.height.value) || 0,
+                    i,
+                    elementsHeight = 0,
+                    lineHeight = (element.dimensionCSSRules.lineHeight && element.dimensionCSSRules.lineHeight.value) || 0,
+                    width = options.width || 0,
+                    maxFontSize = this._getMaxFontSize(element),
+                    len;
+
+                if (lineHeight > height) {
+                    height = lineHeight;
+                }
+
+                height += (element.dimensionCSSRules.marginTop && element.dimensionCSSRules.marginTop.value) || 0;
+                height += (element.dimensionCSSRules.marginBottom && element.dimensionCSSRules.marginBottom.value) || 0;
+                height += (element.dimensionCSSRules.paddingTop && element.dimensionCSSRules.paddingTop.value) || 0;
+                height += (element.dimensionCSSRules.paddingBottom && element.dimensionCSSRules.paddingBottom.value) || 0;
+
+                if (width) {
+                    width -= (element.dimensionCSSRules.paddingLeft && element.dimensionCSSRules.paddingLeft.value) || 0;
+                    width -= (element.dimensionCSSRules.paddingRight && element.dimensionCSSRules.paddingRight.value) || 0;
+                    width -= (element.dimensionCSSRules.marginLeft && element.dimensionCSSRules.marginLeft.value) || 0;
+                    width -= (element.dimensionCSSRules.marginRight && element.dimensionCSSRules.marginRight.value) || 0;
+                }
+
+                if (element.options.isParagraph) {
+                    len = (element.elements && element.elements.length) || 0;
+
+                    for (i = len - 1; i >= 0; i--) {
+                        elementsHeight += this._spotElementHeight({
+                            el: {
+                                textContent: element.elements[i].properties.textContent
+                            },
+                            lineHeight: (
+                                element.elements[i].dimensionCSSRules.lineHeight && element.elements[i].dimensionCSSRules.lineHeight.value
+                            ) || lineHeight,
+                            width: width,
+                            parentFontSize: maxFontSize,
+                            fontSize: element.elements[i].dimensionCSSRules.fontSize ? element.elements[i].dimensionCSSRules.fontSize.value : 0
+                        });
+                    }
+
+                    if (elementsHeight > height) {
+                        height = elementsHeight;
+                    }
+                }
+
+                return height;
+            },
             _ignoreControlWordGroups: {
                 "stylesheet": true,
                 "fonttbl": true,
@@ -9793,7 +9881,9 @@
              * @private
              */
             _resetParagraphProperties: function (el) {
-                el.css = {};
+                el.css = {
+                    margin: "0"
+                };
                 el.dimensionCSSRules = {};
 
                 return el;
@@ -10494,7 +10584,7 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
+                    parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
                     }
@@ -10515,7 +10605,7 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
+                        parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.paddingBottom.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingBottom = parseParams.pageData.dimensionCSSRules.paddingBottom;
                         }
@@ -10536,7 +10626,7 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
+                    parseParams.pageWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
                     }
@@ -10557,7 +10647,7 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
+                        parseParams.pageWidth -= parseParams.pageData.dimensionCSSRules.paddingLeft.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingLeft = parseParams.pageData.dimensionCSSRules.paddingLeft;
                         }
@@ -10578,7 +10668,7 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
+                    parseParams.pageWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingRight = parseParams.pageData.dimensionCSSRules.paddingRight;
                     }
@@ -10598,7 +10688,7 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        parseParams.pageContentWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
+                        parseParams.pageWidth -= parseParams.pageData.dimensionCSSRules.paddingRight.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingRight = parseParams.pageData.dimensionCSSRules.paddingRight;
                         }
@@ -10620,7 +10710,7 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
+                    parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
                     }
@@ -10641,7 +10731,7 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
+                        parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.paddingTop.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.paddingTop = parseParams.pageData.dimensionCSSRules.paddingTop;
                         }
@@ -10654,26 +10744,9 @@
                 },
                 page: function (options) {
                     var parseParams = options.parseParams,
-                        page,
                         parseResult = options.parseResult;
 
-                    parseResult.table = this._destroyTable(parseParams);
-                    parseParams.currentTextElementParent = jDoc.clone(parseParams.paragraphData);
-                    parseParams.currentTextElement = {
-                        options: {},
-                        css: {},
-                        dimensionCSSRules: {},
-                        properties: {
-                            textContent: ""
-                        }
-                    };
-                    parseParams.currentPageIndex++;
-                    parseParams.currentElementIndex = 0;
-                    parseParams.pageContentHeight = 0;
-
-                    page = jDoc.clone(parseParams.pageData);
-                    parseResult.pages[parseParams.currentPageIndex] = page;
-                    page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
+                    this._createNewPage(options);
 
                     return {
                         parseParams: parseParams,
@@ -10690,11 +10763,11 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    if (parseParams.pageContentHeight > 0) {
-                        parseParams.pageContentHeight = 0;
+                    if (parseParams.pageHeight > 0) {
+                        parseParams.pageHeight = 0;
                     }
 
-                    parseParams.pageContentHeight += parseParams.pageData.dimensionCSSRules.height.value;
+                    parseParams.pageHeight += parseParams.pageData.dimensionCSSRules.height.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
                     }
@@ -10713,10 +10786,10 @@
                         value: param / 20,
                         units: "pt"
                     };
-                    if (parseParams.pageContentWidth > 0) {
-                        parseParams.pageContentWidth = 0;
+                    if (parseParams.pageWidth > 0) {
+                        parseParams.pageWidth = 0;
                     }
-                    parseParams.pageContentWidth = parseParams.pageData.dimensionCSSRules.width.value;
+                    parseParams.pageWidth = parseParams.pageData.dimensionCSSRules.width.value;
                     for (i = parseResult.pages.length - 1; i >= 0; i--) {
                         parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
                     }
@@ -10737,10 +10810,10 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        if (parseParams.pageContentHeight > 0) {
-                            parseParams.pageContentHeight = 0;
+                        if (parseParams.pageHeight > 0) {
+                            parseParams.pageHeight = 0;
                         }
-                        parseParams.pageContentHeight -= parseParams.pageData.dimensionCSSRules.height.value;
+                        parseParams.pageHeight -= parseParams.pageData.dimensionCSSRules.height.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.height = parseParams.pageData.dimensionCSSRules.height;
                         }
@@ -10762,10 +10835,10 @@
                             value: param / 20,
                             units: "pt"
                         };
-                        if (parseParams.pageContentWidth > 0) {
-                            parseParams.pageContentWidth = 0;
+                        if (parseParams.pageWidth > 0) {
+                            parseParams.pageWidth = 0;
                         }
-                        parseParams.pageContentWidth = parseParams.pageData.dimensionCSSRules.width.value;
+                        parseParams.pageWidth = parseParams.pageData.dimensionCSSRules.width.value;
                         for (i = parseResult.pages.length - 1; i >= 0; i--) {
                             parseResult.pages[i].dimensionCSSRules.width = parseParams.pageData.dimensionCSSRules.width;
                         }
@@ -10820,11 +10893,25 @@
                 },
                 par: function (options) {
                     var parseParams = options.parseParams,
+                        paragraphHeight,
                         parseResult = options.parseResult;
 
-                    parseParams.currentElementIndex++;
+                    if (parseParams.currentTextElementParent && parseParams.pageWidth && parseParams.pageHeight) {
+                        paragraphHeight = this._getElementHeight(parseParams.currentTextElementParent, {
+                            width: parseParams.pageWidth
+                        });
 
-                    console.log("page", parseParams.pageContentHeight, parseParams.pageContentWidth);
+                        if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
+                            this._createNewPage(options);
+                            parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
+                                parseParams.currentTextElementParent;
+                            parseParams.pageContentHeight = paragraphHeight;
+                        }
+
+                        parseParams.pageContentHeight += paragraphHeight;
+                    }
+
+                    parseParams.currentElementIndex++;
 
                     /**
                      * inherit previous paragraph

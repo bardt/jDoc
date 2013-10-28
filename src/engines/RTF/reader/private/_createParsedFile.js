@@ -51,7 +51,9 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                 options: {
                     isParagraph: true
                 },
-                css: {},
+                css: {
+                    margin: "0"
+                },
                 dimensionCSSRules: {},
                 elements: []
             },
