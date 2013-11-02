@@ -536,17 +536,12 @@ jDoc.Engine.prototype = {
     _spotElementHeight: function (options) {
         options = options || {};
 
-        options.lineHeight = options.lineHeight || 1;
-        options.parentFontSize = options.parentFontSize || 1;
-
-        var len = options.el.textContent ? options.el.textContent.length : 0,
-            height = Math.ceil(
-                (len * options.fontSize) / options.width
-            ) * (
-                (
-                    options.fontSize > options.parentFontSize ? options.fontSize : options.parentFontSize
-                ) * options.lineHeight
-            );
+        var el = options.el,
+            lineHeight = options.lineHeight || 1,
+            parentFontSize = options.parentFontSize || 1,
+            fontSize = options.fontSize > parentFontSize ? options.fontSize : options.parentFontSize,
+            len = (el && el.textContent && el.textContent.length) || 0,
+            height = Math.ceil((len * fontSize) / options.width) * (fontSize * lineHeight);
 
         return isNaN(height) ? 0 : Math.round(height);
     }

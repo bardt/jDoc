@@ -8,6 +8,8 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
             width: parseParams.pageWidth
         });
 
+        console.log(parseParams.pageContentHeight, paragraphHeight, parseParams.pageHeight);
+
         if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
             this._createNewPage(options);
             parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =

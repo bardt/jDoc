@@ -54,7 +54,15 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                 css: {
                     margin: "0"
                 },
-                dimensionCSSRules: {},
+                dimensionCSSRules: {
+                    /**
+                     * default font size
+                     */
+                    fontSize: {
+                        value: 14,
+                        units: "pt"
+                    }
+                },
                 elements: []
             },
             hexWordsMask: (/^'/),

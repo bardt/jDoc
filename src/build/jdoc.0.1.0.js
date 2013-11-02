@@ -8971,17 +8971,12 @@
         _spotElementHeight: function (options) {
             options = options || {};
 
-            options.lineHeight = options.lineHeight || 1;
-            options.parentFontSize = options.parentFontSize || 1;
-
-            var len = options.el.textContent ? options.el.textContent.length : 0,
-                height = Math.ceil(
-                    (len * options.fontSize) / options.width
-                ) * (
-                    (
-                        options.fontSize > options.parentFontSize ? options.fontSize : options.parentFontSize
-                    ) * options.lineHeight
-                );
+            var el = options.el,
+                lineHeight = options.lineHeight || 1,
+                parentFontSize = options.parentFontSize || 1,
+                fontSize = options.fontSize > parentFontSize ? options.fontSize : options.parentFontSize,
+                len = (el && el.textContent && el.textContent.length) || 0,
+                height = Math.ceil((len * fontSize) / options.width) * (fontSize * lineHeight);
 
             return isNaN(height) ? 0 : Math.round(height);
         }
@@ -9423,7 +9418,15 @@
                             css: {
                                 margin: "0"
                             },
-                            dimensionCSSRules: {},
+                            dimensionCSSRules: {
+                                /**
+                                 * default font size
+                                 */
+                                fontSize: {
+                                    value: 14,
+                                    units: "pt"
+                                }
+                            },
                             elements: []
                         },
                         hexWordsMask: (/^'/),
@@ -9620,6 +9623,8 @@
 
                 var height = (element.dimensionCSSRules.height && element.dimensionCSSRules.height.value) || 0,
                     i,
+                    textContent,
+                    fontSize,
                     elementsHeight = 0,
                     lineHeight = (element.dimensionCSSRules.lineHeight && element.dimensionCSSRules.lineHeight.value) || 0,
                     width = options.width || 0,
@@ -9644,18 +9649,33 @@
 
                 if (element.options.isParagraph) {
                     len = (element.elements && element.elements.length) || 0;
+                    textContent = "";
+                    fontSize = 0;
+                    elementsHeight = 0;
 
-                    for (i = len - 1; i >= 0; i--) {
-                        elementsHeight += this._spotElementHeight({
+                    for (i = 0; i < len; i++) {
+                        textContent += element.elements[i].properties.textContent;
+
+                        if (!fontSize) {
+                            fontSize = (
+                                element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value
+                            ) || 0;
+                        }
+
+                        if (element.elements[i].dimensionCSSRules.lineHeight && element.elements[i].dimensionCSSRules.lineHeight.value) {
+                            lineHeight = element.elements[i].dimensionCSSRules.lineHeight.value;
+                        }
+                    }
+
+                    if (textContent && fontSize) {
+                        elementsHeight = this._spotElementHeight({
                             el: {
-                                textContent: element.elements[i].properties.textContent
+                                textContent: textContent
                             },
-                            lineHeight: (
-                                element.elements[i].dimensionCSSRules.lineHeight && element.elements[i].dimensionCSSRules.lineHeight.value
-                            ) || lineHeight,
+                            lineHeight: lineHeight,
                             width: width,
                             parentFontSize: maxFontSize,
-                            fontSize: element.elements[i].dimensionCSSRules.fontSize ? element.elements[i].dimensionCSSRules.fontSize.value : 0
+                            fontSize: fontSize
                         });
                     }
 
@@ -9872,19 +9892,6 @@
                     value: 12,
                     units: "pt"
                 };
-
-                return el;
-            },
-            /**
-             * @description Reset paragraph properties to default
-             * @param el
-             * @private
-             */
-            _resetParagraphProperties: function (el) {
-                el.css = {
-                    margin: "0"
-                };
-                el.dimensionCSSRules = {};
 
                 return el;
             },
@@ -10901,6 +10908,8 @@
                             width: parseParams.pageWidth
                         });
 
+                        console.log(parseParams.pageContentHeight, paragraphHeight, parseParams.pageHeight);
+
                         if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
                             this._createNewPage(options);
                             parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
@@ -10951,7 +10960,6 @@
                         page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
                         parseParams.currentTextElement = null;
                     }
-                    this._resetParagraphProperties(parseParams.currentTextElementParent);
 
                     return {
                         parseParams: parseParams,

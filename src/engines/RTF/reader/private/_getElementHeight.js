@@ -10,6 +10,8 @@ jDoc.engines.RTF.prototype._getElementHeight = function (element, options) {
 
     var height = (element.dimensionCSSRules.height && element.dimensionCSSRules.height.value) || 0,
         i,
+        textContent,
+        fontSize,
         elementsHeight = 0,
         lineHeight = (element.dimensionCSSRules.lineHeight && element.dimensionCSSRules.lineHeight.value) || 0,
         width = options.width || 0,
@@ -34,18 +36,33 @@ jDoc.engines.RTF.prototype._getElementHeight = function (element, options) {
 
     if (element.options.isParagraph) {
         len = (element.elements && element.elements.length) || 0;
+        textContent = "";
+        fontSize = 0;
+        elementsHeight = 0;
 
-        for (i = len - 1; i >= 0; i--) {
-            elementsHeight += this._spotElementHeight({
+        for (i = 0; i < len; i++) {
+            textContent += element.elements[i].properties.textContent;
+
+            if (!fontSize) {
+                fontSize = (
+                    element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value
+                ) || 0;
+            }
+
+            if (element.elements[i].dimensionCSSRules.lineHeight && element.elements[i].dimensionCSSRules.lineHeight.value) {
+                lineHeight = element.elements[i].dimensionCSSRules.lineHeight.value;
+            }
+        }
+
+        if (textContent && fontSize) {
+            elementsHeight = this._spotElementHeight({
                 el: {
-                    textContent: element.elements[i].properties.textContent
+                    textContent: textContent
                 },
-                lineHeight: (
-                    element.elements[i].dimensionCSSRules.lineHeight && element.elements[i].dimensionCSSRules.lineHeight.value
-                ) || lineHeight,
+                lineHeight: lineHeight,
                 width: width,
                 parentFontSize: maxFontSize,
-                fontSize: element.elements[i].dimensionCSSRules.fontSize ? element.elements[i].dimensionCSSRules.fontSize.value : 0
+                fontSize: fontSize
             });
         }
 

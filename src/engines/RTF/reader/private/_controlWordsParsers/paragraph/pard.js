@@ -10,7 +10,6 @@ jDoc.engines.RTF.prototype._controlWordsParsers.pard = function (options) {
         page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
         parseParams.currentTextElement = null;
     }
-    this._resetParagraphProperties(parseParams.currentTextElementParent);
 
     return {
         parseParams: parseParams,
