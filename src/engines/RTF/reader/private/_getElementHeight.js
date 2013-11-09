@@ -15,7 +15,6 @@ jDoc.engines.RTF.prototype._getElementHeight = function (element, options) {
         elementsHeight = 0,
         lineHeight = (element.dimensionCSSRules.lineHeight && element.dimensionCSSRules.lineHeight.value) || 0,
         width = options.width || 0,
-        maxFontSize = this._getMaxFontSize(element),
         len;
 
     if (lineHeight > height) {
@@ -43,7 +42,7 @@ jDoc.engines.RTF.prototype._getElementHeight = function (element, options) {
         for (i = 0; i < len; i++) {
             textContent += element.elements[i].properties.textContent;
 
-            if (!fontSize) {
+            if (!fontSize && element.elements[i].properties.textContent[0]) {
                 fontSize = (
                     element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value
                 ) || 0;
@@ -54,14 +53,14 @@ jDoc.engines.RTF.prototype._getElementHeight = function (element, options) {
             }
         }
 
-        if (textContent && fontSize) {
+        if (textContent[0]) {
             elementsHeight = this._spotElementHeight({
                 el: {
                     textContent: textContent
                 },
-                lineHeight: lineHeight,
+                lineHeight: lineHeight / fontSize,
                 width: width,
-                parentFontSize: maxFontSize,
+                parentFontSize: (element.dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value),
                 fontSize: fontSize
             });
         }

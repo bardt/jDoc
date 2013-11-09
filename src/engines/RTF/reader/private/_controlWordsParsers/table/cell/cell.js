@@ -11,7 +11,6 @@ jDoc.engines.RTF.prototype._controlWordsParsers.cell = function (options) {
     row = row || this._initRow();
 
     table = table || this._initTable({
-        table: table,
         row: row,
         parseParams: parseParams,
         parentElementsList: page.elements,

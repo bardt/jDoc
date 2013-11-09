@@ -8974,9 +8974,9 @@
             var el = options.el,
                 lineHeight = options.lineHeight || 1,
                 parentFontSize = options.parentFontSize || 1,
-                fontSize = options.fontSize > parentFontSize ? options.fontSize : options.parentFontSize,
+                fontSize = options.fontSize || parentFontSize,
                 len = (el && el.textContent && el.textContent.length) || 0,
-                height = Math.ceil((len * fontSize) / options.width) * (fontSize * lineHeight);
+                height = (Math.floor((len * fontSize) / options.width) || 1) * fontSize * lineHeight;
 
             return isNaN(height) ? 0 : Math.round(height);
         }
@@ -9353,7 +9353,9 @@
                 parseParams.currentElementIndex = 0;
                 parseParams.pageContentHeight = 0;
 
-                page = jDoc.clone(parseParams.pageData);
+                page = jDoc.deepMerge({}, parseParams.pageData, {
+                    elements: []
+                });
                 parseResult.pages[parseParams.currentPageIndex] = page;
                 page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
 
@@ -9371,6 +9373,8 @@
             _createParsedFile: function (text, callback) {
                 var i = 0,
                     textContent,
+                    pageHeight = 756,
+                    pageWidth = 595,
                     parseParams = {
                         unParsedControlWords: {},
                         styles: {
@@ -9408,7 +9412,32 @@
                             options: {},
                             attributes: {},
                             css: {},
-                            dimensionCSSRules: {},
+                            dimensionCSSRules: {
+                                paddingBottom: {
+                                    units: "pt",
+                                    value: 42.5
+                                },
+                                paddingLeft: {
+                                    units: "pt",
+                                    value: 70.85
+                                },
+                                paddingRight: {
+                                    units: "pt",
+                                    value: 42.5
+                                },
+                                paddingTop: {
+                                    units: "pt",
+                                    value: 42.5
+                                },
+                                width: {
+                                    value: pageWidth,
+                                    units: "pt"
+                                },
+                                height: {
+                                    value: pageHeight,
+                                    units: "pt"
+                                }
+                            },
                             elements: []
                         },
                         paragraphData: {
@@ -9431,8 +9460,8 @@
                         },
                         hexWordsMask: (/^'/),
                         pageContentHeight: 0,
-                        pageHeight: 0,
-                        pageWidth: 0,
+                        pageHeight: pageHeight,
+                        pageWidth: pageWidth,
                         currentTextElementParent: null,
                         currentTextElement: null,
                         currentPageIndex: 0,
@@ -9444,17 +9473,8 @@
                         options: {
                             zoom: 100
                         },
-                        pages: [{
-                            options: {},
-                            css: {},
-                            attributes: {},
-                            dimensionCSSRules: {},
-                            elements: [{
-                                options: {
-                                    isParagraph: true
-                                },
-                                css: {},
-                                dimensionCSSRules: {},
+                        pages: [jDoc.deepMerge(parseParams.pageData, {
+                            elements: [jDoc.deepMerge(parseParams.paragraphData, {
                                 elements: [{
                                     options: {},
                                     css: {},
@@ -9463,8 +9483,8 @@
                                         textContent: ""
                                     }
                                 }]
-                            }]
-                        }]
+                            })]
+                        })]
                     };
 
                 parseParams.currentTextElementParent = parseResult.pages[0].elements[0];
@@ -9628,7 +9648,6 @@
                     elementsHeight = 0,
                     lineHeight = (element.dimensionCSSRules.lineHeight && element.dimensionCSSRules.lineHeight.value) || 0,
                     width = options.width || 0,
-                    maxFontSize = this._getMaxFontSize(element),
                     len;
 
                 if (lineHeight > height) {
@@ -9656,7 +9675,7 @@
                     for (i = 0; i < len; i++) {
                         textContent += element.elements[i].properties.textContent;
 
-                        if (!fontSize) {
+                        if (!fontSize && element.elements[i].properties.textContent[0]) {
                             fontSize = (
                                 element.elements[i].dimensionCSSRules.fontSize && element.elements[i].dimensionCSSRules.fontSize.value
                             ) || 0;
@@ -9667,14 +9686,14 @@
                         }
                     }
 
-                    if (textContent && fontSize) {
+                    if (textContent[0]) {
                         elementsHeight = this._spotElementHeight({
                             el: {
                                 textContent: textContent
                             },
-                            lineHeight: lineHeight,
+                            lineHeight: lineHeight / fontSize,
                             width: width,
-                            parentFontSize: maxFontSize,
+                            parentFontSize: (element.dimensionCSSRules.fontSize && element.dimensionCSSRules.fontSize.value),
                             fontSize: fontSize
                         });
                     }
@@ -10901,6 +10920,13 @@
                 par: function (options) {
                     var parseParams = options.parseParams,
                         paragraphHeight,
+                        beforePartHeight,
+                        parts,
+                        i,
+                        el,
+                        h,
+                        count,
+                        partHeight,
                         parseResult = options.parseResult;
 
                     if (parseParams.currentTextElementParent && parseParams.pageWidth && parseParams.pageHeight) {
@@ -10908,13 +10934,74 @@
                             width: parseParams.pageWidth
                         });
 
-                        console.log(parseParams.pageContentHeight, paragraphHeight, parseParams.pageHeight);
+                        console.log(parseParams.pageHeight, paragraphHeight);
 
-                        if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
+                        /**
+                         * divide into several parts
+                         */
+                        if (paragraphHeight > parseParams.pageHeight) {
+                            console.log("Page ", parseParams.currentPageIndex, "\n", "par ", parseParams.currentElementIndex);
+                            parts = [];
+                            count = parseParams.currentTextElementParent.elements.length;
+                            beforePartHeight = parseParams.pageContentHeight;
+                            i = 0;
+
+                            while (count) {
+                                parts[i] = jDoc.deepMerge({}, parseParams.currentTextElementParent, {
+                                    elements: []
+                                });
+                                partHeight = 0;
+
+                                while (partHeight < parseParams.pageHeight) {
+                                    el = parseParams.currentTextElementParent.elements.shift();
+                                    parts[i].elements.push(el);
+                                    count--;
+
+                                    h = this._getElementHeight(parts[i], {
+                                        width: parseParams.pageWidth
+                                    });
+
+                                    if (beforePartHeight + h > parseParams.pageHeight || h > parseParams.pageHeight) {
+                                        el = parts[i].elements.pop();
+                                        parseParams.currentTextElementParent.elements.unshift(el);
+                                        count++;
+                                        break;
+                                    }
+
+                                    partHeight = beforePartHeight + h;
+
+                                    if (!count) {
+                                        break;
+                                    }
+                                }
+
+                                if (!beforePartHeight) {
+                                    this._createNewPage(options);
+                                }
+
+                                parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
+                                    parts[i];
+
+                                i++;
+                                beforePartHeight = 0;
+                                parseParams.currentElementIndex++;
+                            }
+
+                            if (i) {
+                                parseParams.currentElementIndex--;
+                            }
+
+                            if (partHeight < parseParams.pageHeight) {
+                                paragraphHeight = partHeight;
+                            } else {
+                                paragraphHeight = 0;
+                            }
+                        } else if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
                             this._createNewPage(options);
+                            parseParams.currentElementIndex++;
                             parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
                                 parseParams.currentTextElementParent;
-                            parseParams.pageContentHeight = paragraphHeight;
+                            parseParams.currentElementIndex--;
                         }
 
                         parseParams.pageContentHeight += paragraphHeight;
@@ -10979,7 +11066,6 @@
                     row = row || this._initRow();
 
                     table = table || this._initTable({
-                        table: table,
                         row: row,
                         parseParams: parseParams,
                         parentElementsList: page.elements,
@@ -11045,7 +11131,6 @@
                     row = row || this._initRow();
 
                     table = table || this._initTable({
-                        table: table,
                         row: row,
                         parseParams: parseParams,
                         parentElementsList: page.elements,
@@ -11479,14 +11564,32 @@
                     var parseParams = options.parseParams,
                         parseResult = options.parseResult,
                         table = parseParams.table,
+                        paragraphHeight,
                         page = parseResult.pages[parseParams.currentPageIndex],
-                        row = table ? table.body.rows[table.body.rows.length - 1] : null;
+                        row = table ? table.body.rows[table.body.rows.length - 1] : null,
+                        isNeedDestroy = !! row;
 
-                    row = row || this._initRow();
+                    if (isNeedDestroy) {
+                        if (parseParams.currentTextElementParent && parseParams.pageWidth && parseParams.pageHeight) {
+                            paragraphHeight = this._getElementHeight(parseParams.currentTextElementParent, {
+                                width: parseParams.pageWidth
+                            });
 
-                    table = table || this._initTable({
-                        table: table,
-                        row: row,
+                            if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
+                                this._createNewPage(options);
+                                parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
+                                    parseParams.currentTextElementParent;
+                            }
+
+                            parseParams.pageContentHeight += paragraphHeight;
+                        }
+
+                        parseParams.currentElementIndex++;
+                        this._destroyTable(parseParams);
+                    }
+
+                    table = this._initTable({
+                        row: isNeedDestroy ? null : row,
                         parseParams: parseParams,
                         parentElementsList: page.elements,
                         parentElementsIndex: parseParams.currentElementIndex,

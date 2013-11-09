@@ -539,9 +539,9 @@ jDoc.Engine.prototype = {
         var el = options.el,
             lineHeight = options.lineHeight || 1,
             parentFontSize = options.parentFontSize || 1,
-            fontSize = options.fontSize > parentFontSize ? options.fontSize : options.parentFontSize,
+            fontSize = options.fontSize || parentFontSize,
             len = (el && el.textContent && el.textContent.length) || 0,
-            height = Math.ceil((len * fontSize) / options.width) * (fontSize * lineHeight);
+            height = (Math.floor((len * fontSize) / options.width) || 1) * fontSize * lineHeight;
 
         return isNaN(height) ? 0 : Math.round(height);
     }

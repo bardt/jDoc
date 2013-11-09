@@ -2,14 +2,32 @@ jDoc.engines.RTF.prototype._controlWordsParsers.row = function (options) {
     var parseParams = options.parseParams,
         parseResult = options.parseResult,
         table = parseParams.table,
+        paragraphHeight,
         page = parseResult.pages[parseParams.currentPageIndex],
-        row = table ? table.body.rows[table.body.rows.length - 1] : null;
+        row = table ? table.body.rows[table.body.rows.length - 1] : null,
+        isNeedDestroy = !!row;
 
-    row = row || this._initRow();
+    if (isNeedDestroy) {
+        if (parseParams.currentTextElementParent && parseParams.pageWidth && parseParams.pageHeight) {
+            paragraphHeight = this._getElementHeight(parseParams.currentTextElementParent, {
+                width: parseParams.pageWidth
+            });
 
-    table = table || this._initTable({
-        table: table,
-        row: row,
+            if (parseParams.pageContentHeight + paragraphHeight > parseParams.pageHeight) {
+                this._createNewPage(options);
+                parseResult.pages[parseParams.currentPageIndex].elements[parseParams.currentElementIndex] =
+                    parseParams.currentTextElementParent;
+            }
+
+            parseParams.pageContentHeight += paragraphHeight;
+        }
+
+        parseParams.currentElementIndex++;
+        this._destroyTable(parseParams);
+    }
+
+    table = this._initTable({
+        row: isNeedDestroy ? null : row,
         parseParams: parseParams,
         parentElementsList: page.elements,
         parentElementsIndex: parseParams.currentElementIndex,

@@ -7,6 +7,8 @@
 jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
     var i = 0,
         textContent,
+        pageHeight = 756,
+        pageWidth = 595,
         parseParams = {
             unParsedControlWords: {},
             styles: {
@@ -44,7 +46,32 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                 options: {},
                 attributes: {},
                 css: {},
-                dimensionCSSRules: {},
+                dimensionCSSRules: {
+                    paddingBottom: {
+                        units: "pt",
+                        value: 42.5
+                    },
+                    paddingLeft: {
+                        units: "pt",
+                        value: 70.85
+                    },
+                    paddingRight: {
+                        units: "pt",
+                        value: 42.5
+                    },
+                    paddingTop: {
+                        units: "pt",
+                        value: 42.5
+                    },
+                    width: {
+                        value: pageWidth,
+                        units: "pt"
+                    },
+                    height: {
+                        value: pageHeight,
+                        units: "pt"
+                    }
+                },
                 elements: []
             },
             paragraphData: {
@@ -67,8 +94,8 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
             },
             hexWordsMask: (/^'/),
             pageContentHeight: 0,
-            pageHeight: 0,
-            pageWidth: 0,
+            pageHeight: pageHeight,
+            pageWidth: pageWidth,
             currentTextElementParent: null,
             currentTextElement: null,
             currentPageIndex: 0,
@@ -80,17 +107,8 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
             options: {
                 zoom: 100
             },
-            pages: [{
-                options: {},
-                css: {},
-                attributes: {},
-                dimensionCSSRules: {},
-                elements: [{
-                    options: {
-                        isParagraph: true
-                    },
-                    css: {},
-                    dimensionCSSRules: {},
+            pages: [jDoc.deepMerge(parseParams.pageData, {
+                elements: [jDoc.deepMerge(parseParams.paragraphData, {
                     elements: [{
                         options: {},
                         css: {},
@@ -99,8 +117,8 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                             textContent: ""
                         }
                     }]
-                }]
-            }]
+                })]
+            })]
         };
 
     parseParams.currentTextElementParent = parseResult.pages[0].elements[0];
