@@ -176,7 +176,8 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
             }
             parseParams.braceCounter -= 1;
             i += 1;
-            if (parseParams.currentTextElement) {
+            if (parseParams.currentTextElement && parseParams.currentTextElement.properties.textContent.length) {
+                parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                 parseParams.currentTextElement = {
                     options: {},
                     css: {},
@@ -185,7 +186,6 @@ jDoc.engines.RTF.prototype._createParsedFile = function (text, callback) {
                         textContent: ""
                     }
                 };
-                parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
             }
             break;
         default:

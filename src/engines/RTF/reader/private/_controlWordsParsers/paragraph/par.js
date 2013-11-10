@@ -5,6 +5,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
         parts,
         i,
         el,
+        elements,
         h,
         count,
         partHeight,
@@ -21,9 +22,9 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
          * divide into several parts
          */
         if (paragraphHeight > parseParams.pageHeight) {
-            console.log("Page ", parseParams.currentPageIndex, "\n", "par ", parseParams.currentElementIndex);
             parts = [];
-            count = parseParams.currentTextElementParent.elements.length;
+            elements = parseParams.currentTextElementParent.elements;
+            count = elements.length;
             beforePartHeight = parseParams.pageContentHeight;
             i = 0;
 
@@ -34,7 +35,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
                 partHeight = 0;
 
                 while (partHeight < parseParams.pageHeight) {
-                    el = parseParams.currentTextElementParent.elements.shift();
+                    el = elements.shift();
                     parts[i].elements.push(el);
                     count--;
 
@@ -44,7 +45,7 @@ jDoc.engines.RTF.prototype._controlWordsParsers.par = function (options) {
 
                     if (beforePartHeight + h > parseParams.pageHeight || h > parseParams.pageHeight) {
                         el = parts[i].elements.pop();
-                        parseParams.currentTextElementParent.elements.unshift(el);
+                        elements.unshift(el);
                         count++;
                         break;
                     }

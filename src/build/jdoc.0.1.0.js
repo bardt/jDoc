@@ -9350,14 +9350,13 @@
                     }
                 };
                 parseParams.currentPageIndex++;
-                parseParams.currentElementIndex = 0;
+                parseParams.currentElementIndex = -1;
                 parseParams.pageContentHeight = 0;
 
                 page = jDoc.deepMerge({}, parseParams.pageData, {
                     elements: []
                 });
                 parseResult.pages[parseParams.currentPageIndex] = page;
-                page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
 
                 return {
                     parseParams: parseParams,
@@ -9542,7 +9541,8 @@
                         }
                         parseParams.braceCounter -= 1;
                         i += 1;
-                        if (parseParams.currentTextElement) {
+                        if (parseParams.currentTextElement && parseParams.currentTextElement.properties.textContent.length) {
+                            parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                             parseParams.currentTextElement = {
                                 options: {},
                                 css: {},
@@ -9551,7 +9551,6 @@
                                     textContent: ""
                                 }
                             };
-                            parseParams.currentTextElementParent.elements.push(parseParams.currentTextElement);
                         }
                         break;
                     default:
@@ -10924,6 +10923,7 @@
                         parts,
                         i,
                         el,
+                        elements,
                         h,
                         count,
                         partHeight,
@@ -10940,9 +10940,9 @@
                          * divide into several parts
                          */
                         if (paragraphHeight > parseParams.pageHeight) {
-                            console.log("Page ", parseParams.currentPageIndex, "\n", "par ", parseParams.currentElementIndex);
                             parts = [];
-                            count = parseParams.currentTextElementParent.elements.length;
+                            elements = parseParams.currentTextElementParent.elements;
+                            count = elements.length;
                             beforePartHeight = parseParams.pageContentHeight;
                             i = 0;
 
@@ -10953,7 +10953,7 @@
                                 partHeight = 0;
 
                                 while (partHeight < parseParams.pageHeight) {
-                                    el = parseParams.currentTextElementParent.elements.shift();
+                                    el = elements.shift();
                                     parts[i].elements.push(el);
                                     count--;
 
@@ -10963,7 +10963,7 @@
 
                                     if (beforePartHeight + h > parseParams.pageHeight || h > parseParams.pageHeight) {
                                         el = parts[i].elements.pop();
-                                        parseParams.currentTextElementParent.elements.unshift(el);
+                                        elements.unshift(el);
                                         count++;
                                         break;
                                     }

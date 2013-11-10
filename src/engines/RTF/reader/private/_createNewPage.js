@@ -14,14 +14,13 @@ jDoc.engines.RTF.prototype._createNewPage = function (options) {
         }
     };
     parseParams.currentPageIndex++;
-    parseParams.currentElementIndex = 0;
+    parseParams.currentElementIndex = -1;
     parseParams.pageContentHeight = 0;
 
     page = jDoc.deepMerge({}, parseParams.pageData, {
         elements: []
     });
     parseResult.pages[parseParams.currentPageIndex] = page;
-    page.elements[parseParams.currentElementIndex] = parseParams.currentTextElementParent;
 
     return {
         parseParams: parseParams,
